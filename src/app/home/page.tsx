@@ -1,7 +1,7 @@
-"use client";
+"use client"; // クライアントコンポーネント
 
-import * as React from "react";
-// import { createContext, useContext, useEffect, useState } from "react";
+import React from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 
 import { Header } from "../../../component/Header";
@@ -9,11 +9,16 @@ import { Footer } from "../../../component/Footer";
 import { FilterSection } from "../../../component/FilterSection";
 import { Pagination } from "../../../component/Pagination";
 import { BusinessCard } from "../../../component/businesscard/BusinessCard";
+
+// 仮でインポート元が同階層にあるように書きますが、
+// 実際には yourDataFile.tsx 等から読み込んでください
 import { businessCardsData, filterSections } from "./index";
 import { useDataContext } from "../context/DataContext";
 import CheckDataContext from "../../../component/CheckDataContext";
 
-const DocumentLibrary: React.FC = () => {
+export  function DocumentLibrary() {
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
   const { data, loading, error } = useDataContext();
   const facetInfo = data?.facet_info || {};
   const initial_search_data = data?.search_results || {};
@@ -26,34 +31,59 @@ const DocumentLibrary: React.FC = () => {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalCount);
 
-  // Loading処理
-  if (loading) {
+
+  // 未ログインの場合はサインインボタンだけ表示
+  if (!session) {
     return (
-      <div className="flex overflow-hidden flex-col bg-gray-200">
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <p>読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="flex overflow-hidden flex-col bg-gray-200">
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <p>エラーが発生しました: {error}</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="mb-4">You are not signed in.</p>
+        <button
+          onClick={() => signIn("azure-ad")} // Azure ADを指定
+          className="p-2 bg-blue-600 text-white"
+        >
+          Sign in with Azure AD
+        </button>
       </div>
     );
   }
 
+  // ログイン済みの場合
+  const accessToken = session.accessToken as string | undefined;
+
+    // // Loading処理
+    // if (loading) {
+    //   return (
+    //     <div className="flex overflow-hidden flex-col bg-gray-200">
+    //       <Header />
+    //       <div className="flex items-center justify-center min-h-screen">
+    //         <p>読み込み中...</p>
+    //       </div>
+    //     </div>
+    //   );
+    // }
+    if (error) {
+      return (
+        <div className="flex overflow-hidden flex-col bg-gray-200">
+          <Header />
+          <div className="flex items-center justify-center min-h-screen">
+            <p>エラーが発生しました: {error}</p>
+          </div>
+        </div>
+      );
+    }
+
   return (
-    <div className="flex overflow-hidden flex-col bg-gray-200">
-      {/* データデバッグ用コンポーネント */}
-      {/* <CheckDataContext /> */}
-      
+    <div className="flex flex-col overflow-hidden bg-gray-200">
+
       <Header />
+
+      {/* アクセストークン表示（デモ用） */}
+      {/* {accessToken && (
+        <div className="bg-white text-red-600 p-4">
+          <p>Access Token: {accessToken}</p>
+        </div>
+      )} */}
+
       <div className="flex flex-wrap gap-5 justify-between w-full tracking-wider max-w-[1472px] max-md:max-w-full">
         <div className="flex flex-wrap gap-10 max-md:max-w-full">
           <div className="flex flex-auto gap-10 items-start px-10 pt-5 pb-10 text-white whitespace-nowrap rounded-none shadow-[0px_2px_4px_rgba(0,0,0,0.15)] max-md:px-5 bg-gradient-to-r from-red-500 to-red-300">
@@ -169,9 +199,14 @@ const DocumentLibrary: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* サインアウトボタン */}
+      <button onClick={() => signOut()} className="p-2 bg-gray-600 text-white">
+          Sign Out
+      </button>
       <Footer />
     </div>
   );
+      
 };
 
 export default DocumentLibrary;
