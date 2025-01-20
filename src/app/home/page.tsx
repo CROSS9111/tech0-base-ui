@@ -16,7 +16,7 @@ import { businessCardsData, filterSections } from "./index";
 import { useDataContext } from "../context/DataContext";
 import CheckDataContext from "../../../component/CheckDataContext";
 
-export  function DocumentLibrary() {
+export default function DocumentLibrary() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
   const { data, loading, error } = useDataContext();
@@ -209,4 +209,4 @@ export  function DocumentLibrary() {
       
 };
 
-export default DocumentLibrary;
+// export default DocumentLibrary;
