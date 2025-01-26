@@ -1,6 +1,6 @@
 "use client"; // クライアントコンポーネント
 
-import React from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 
@@ -14,6 +14,8 @@ import { BusinessCard } from "../../../component/businesscard/BusinessCard";
 // 実際には yourDataFile.tsx 等から読み込んでください
 import { businessCardsData, filterSections } from "./index";
 import { useDataContext } from "../context/DataContext";
+
+// Fetch動作確認用
 import CheckDataContext from "../../../component/CheckDataContext";
 
 export default function DocumentLibrary() {
@@ -22,6 +24,16 @@ export default function DocumentLibrary() {
   const { data, loading, error } = useDataContext();
   const facetInfo = data?.facet_info || {};
   const initial_search_data = data?.search_results || {};
+
+  // フィルタリング状態を管理
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // フィルタリングされたデータ
+  const filteredData = selectedTags.length
+    ? initial_search_data.filter((item: any) =>
+        selectedTags.every((tag) => item.tags.includes(tag))
+      )
+    : initial_search_data;
 
   // 検索結果のページ表示用
   const currentPage = 1; // 現在のページ（必要に応じて動的に変更）
@@ -74,7 +86,6 @@ export default function DocumentLibrary() {
 
   return (
     <div className="flex flex-col overflow-hidden bg-gray-200">
-
       <Header />
 
       {/* アクセストークン表示（デモ用） */}
@@ -146,17 +157,16 @@ export default function DocumentLibrary() {
                     }))
                   : []
               }
+              onFilterChange={(selected) => setSelectedTags(selected)}
             />
           </div>
         ))}
         </div>
 
         <div className="flex flex-col w-full">
-
-        
             <div className="grid grid-cols-2 gap-6">
-              {Array.isArray(initial_search_data) &&
-                initial_search_data.map((card, index) => (
+              {Array.isArray(filteredData) &&
+                filteredData.map((card, index) => (
                   <BusinessCard
                     key={card.id} // 一意のidを利用
                     title={card.title}
@@ -164,7 +174,8 @@ export default function DocumentLibrary() {
                     personInfo={{
                       name: card.authors.join(", "),
                       department: card.category,
-                      documentType: "マーケティング資料",
+                      // documentTypeは現状ないのでコメントアウト
+                      // documentType: "社内資料",
                     }}
                     tags={card.tags}
                     date={new Date(card.release_year, 0, 1).toLocaleDateString()} // リリース年をフォーマット
@@ -208,5 +219,3 @@ export default function DocumentLibrary() {
   );
       
 };
-
-// export default DocumentLibrary;

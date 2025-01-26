@@ -31,7 +31,7 @@ export interface BusinessCardProps {
   personInfo: {
     name: string;
     department: string;
-    documentType: string;
+    // documentType: string;
   };
   tags: string[];
   date: string;
