@@ -31,9 +31,9 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
           <div className="mt-1">
             <InfoRow label="所属部署" value={personInfo.department} />
           </div>
-          <div className="mt-1">
+          {/* <div className="mt-1">
             <InfoRow label="資料種別" value={personInfo.documentType} />
-          </div>
+          </div> */}
         </div>
         <div className="flex gap-2.5 items-center self-start mt-6 text-sm font-medium leading-none text-center whitespace-nowrap text-neutral-700">
           {tags.map((tag, index) => (
