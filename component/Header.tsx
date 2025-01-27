@@ -1,5 +1,6 @@
-import * as React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+import { signOut } from "next-auth/react";
 
 export const Header: React.FC<{selectedTags: string[]; }> = ({ selectedTags }) => {
   const [searchKeyword, setSearchKeyword] = React.useState(""); // フリーワード検索の状態を管理
@@ -74,6 +75,16 @@ export const Header: React.FC<{selectedTags: string[]; }> = ({ selectedTags }) =
             />
           </button>
         </div>
+
+        {/* サインアウトボタン */}
+        <button
+          onClick={() => signOut()}
+          className="p-2 bg-gray-600 text-white rounded"
+        >
+          Sign Out
+        </button>
+
+        {/* メニューアイコン */}
         <button aria-label="Menu">
           <img
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/5fe78f2b2c68aafd2c4ef4f55e0cee4461d68d53f3bfc3e51d9464611a00d1b1?placeholderIfAbsent=true&apiKey=830249011bfc4b9a9e2dddb095d90bfd"

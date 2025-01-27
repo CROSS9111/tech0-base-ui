@@ -43,7 +43,6 @@ export default function DocumentLibrary() {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalCount);
 
-
   // 未ログインの場合はサインインボタンだけ表示
   if (!session) {
     return (
@@ -146,45 +145,47 @@ export default function DocumentLibrary() {
               <FilterSection title={section.title} items={section.items} />
             </div>
           ))} */}
-          {Object.entries(facetInfo || {}).map(([facetTitle, facetItems], index) => (
-          <div key={index} className={index > 0 ? "mt-5" : ""}>
-            <FilterSection
-              title={facetTitle}
-              items={
-                Array.isArray(facetItems)
-                  ? facetItems.map((item) => ({
-                      label: item.value,
-                      count: item.count,
-                    }))
-                  : []
-              }
-              onFilterChange={(selected) => setSelectedTags(selected)}
-            />
-          </div>
-        ))}
+          {Object.entries(facetInfo || {}).map(
+            ([facetTitle, facetItems], index) => (
+              <div key={index} className={index > 0 ? "mt-5" : ""}>
+                <FilterSection
+                  title={facetTitle}
+                  items={
+                    Array.isArray(facetItems)
+                      ? facetItems.map((item) => ({
+                          label: item.value,
+                          count: item.count,
+                        }))
+                      : []
+                  }
+                  onFilterChange={(selected) => setSelectedTags(selected)}
+                />
+              </div>
+            )
+          )}
         </div>
 
         <div className="flex flex-col w-full">
-            <div className="grid grid-cols-2 gap-6">
-              {Array.isArray(filteredData) &&
-                filteredData.map((card, index) => (
-                  <BusinessCard
-                    key={card.id} // 一意のidを利用
-                    title={card.title}
-                    image="https://geekpictures.co.jp/jp/wp-content/themes/geek/img/logo_head.svg" // 必要に応じてデフォルト画像を指定
-                    personInfo={{
-                      name: card.authors.join(", "),
-                      department: card.category,
-                      // documentTypeは現状ないのでコメントアウト
-                      // documentType: "社内資料",
-                    }}
-                    tags={card.tags}
-                    date={new Date(card.release_year, 0, 1).toLocaleDateString()} // リリース年をフォーマット
-                    fileType="PDF" // 必要ならデフォルトのファイル種別
-                  />
-                ))}
-            </div>
-          
+          <div className="grid grid-cols-2 gap-6">
+            {Array.isArray(filteredData) &&
+              filteredData.map((card, index) => (
+                <BusinessCard
+                  key={card.id} // 一意のidを利用
+                  title={card.title}
+                  image="https://geekpictures.co.jp/jp/wp-content/themes/geek/img/logo_head.svg" // 必要に応じてデフォルト画像を指定
+                  personInfo={{
+                    name: card.authors.join(", "),
+                    department: card.category,
+                    // documentTypeは現状ないのでコメントアウト
+                    // documentType: "社内資料",
+                  }}
+                  tags={card.tags}
+                  date={new Date(card.release_year, 0, 1).toLocaleDateString()} // リリース年をフォーマット
+                  fileType="PDF" // 必要ならデフォルトのファイル種別
+                />
+              ))}
+          </div>
+
           {/* <div className="grid grid-cols-2 gap-6">
             {businessCardsData.map((card, index) => (
               <BusinessCard
@@ -212,11 +213,10 @@ export default function DocumentLibrary() {
         </div>
       </div>
       {/* サインアウトボタン */}
-      <button onClick={() => signOut()} className="p-2 bg-gray-600 text-white">
+      {/* <button onClick={() => signOut()} className="p-2 bg-gray-600 text-white">
           Sign Out
-      </button>
+      </button>*/}
       <Footer />
     </div>
   );
-      
-};
+}
