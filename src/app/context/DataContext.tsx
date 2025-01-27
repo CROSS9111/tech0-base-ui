@@ -31,7 +31,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const result = await response.json();
-      console.log(result)
+      console.log("initialfetch",result)
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "予期しないエラーが発生しました");
@@ -41,9 +41,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    fetchInitialData();
-    console.log("check_function_api")
-  }, []);
+    if (!data) { // data が null の場合のみ fetchInitialData を呼び出す
+      fetchInitialData();
+      console.log("Done fetch")
+    }
+  }, [data]); // data を依存関係に追加
 
   return (
     <DataContext.Provider value={{ data, loading, error }}>

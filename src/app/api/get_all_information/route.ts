@@ -300,7 +300,9 @@ export async function GET() {
     // const results = test_data
 
     // ログ出力（デバッグ用）
-    console.log("取得したデータ:", results);
+    // console.log("取得したデータ:", results);
+    console.log("取得したデータ完了");
+
 
     // JSONで結果を返す
     return NextResponse.json(results);

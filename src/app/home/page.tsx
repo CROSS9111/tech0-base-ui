@@ -76,17 +76,18 @@ export default function DocumentLibrary() {
     if (error) {
       return (
         <div className="flex overflow-hidden flex-col bg-gray-200">
-          <Header />
+          <Header selectedTags={selectedTags} />
           <div className="flex items-center justify-center min-h-screen">
             <p>エラーが発生しました: {error}</p>
           </div>
         </div>
       );
     }
+    console.log(selectedTags)
 
   return (
     <div className="flex flex-col overflow-hidden bg-gray-200">
-      <Header />
+      <Header selectedTags={selectedTags} />
 
       {/* アクセストークン表示（デモ用） */}
       {/* {accessToken && (
