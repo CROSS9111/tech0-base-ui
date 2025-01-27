@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { InfoRow } from "./InfoRow";
 import { Tag } from "./Tag";
@@ -11,17 +12,38 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
   tags,
   date,
   fileType,
+  //modalUrl, // 新たに追加されたURLプロパティ
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      // モーダル表示中は背景スクロールを防止
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isModalOpen]);
+
   return (
     <div className="flex flex-col pb-4 bg-white rounded-lg shadow-[0px_2px_4px_rgba(0,0,0,0.15)] max-md:max-w-full">
       <div className="flex flex-col px-5 mt-4 w-full max-md:max-w-full">
+        {/* 画像クリックでモーダルを開く */}
         <Image
           src={image}
           alt="Business update presentation cover"
           width={800}
           height={465}
           loading="lazy"
-          className="object-contain w-full max-md:max-w-full"
+          className="object-contain w-full max-md:max-w-full cursor-pointer"
+          onClick={openModal}
         />
         <div className="self-start mt-5 text-base font-bold text-neutral-700">
           {title}
@@ -31,9 +53,6 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
           <div className="mt-1">
             <InfoRow label="所属部署" value={personInfo.department} />
           </div>
-          {/* <div className="mt-1">
-            <InfoRow label="資料種別" value={personInfo.documentType} />
-          </div> */}
         </div>
         <div className="flex gap-2.5 items-center self-start mt-6 text-sm font-medium leading-none text-center whitespace-nowrap text-neutral-700">
           {tags.map((tag, index) => (
@@ -58,6 +77,26 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* モーダル */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          onClick={closeModal} // 背景クリックでモーダルを閉じる
+        >
+          <div
+            className="relative bg-white rounded-lg w-11/12 max-w-4xl overflow-y-auto max-h-[90%]"
+            onClick={(e) => e.stopPropagation()} // モーダル内部クリックで閉じないようにする
+          >
+            {/* iframeでURLを表示 */}
+            <iframe
+              src={"https://tech0-jp.com/"}
+              className="w-full h-[500px] rounded-b-lg"
+              title="Modal Content"
+            ></iframe>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
