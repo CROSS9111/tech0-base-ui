@@ -1,6 +1,6 @@
 "use client"; // クライアントコンポーネント
 
-import React from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 
@@ -14,14 +14,26 @@ import { BusinessCard } from "../../../component/businesscard/BusinessCard";
 // 実際には yourDataFile.tsx 等から読み込んでください
 import { businessCardsData, filterSections } from "./index";
 import { useDataContext } from "../context/DataContext";
+
+// Fetch動作確認用
 import CheckDataContext from "../../../component/CheckDataContext";
 
-export  function DocumentLibrary() {
+export default function DocumentLibrary() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
   const { data, loading, error } = useDataContext();
   const facetInfo = data?.facet_info || {};
   const initial_search_data = data?.search_results || {};
+
+  // フィルタリング状態を管理
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // フィルタリングされたデータ
+  const filteredData = selectedTags.length
+    ? initial_search_data.filter((item: any) =>
+        selectedTags.every((tag) => item.tags.includes(tag))
+      )
+    : initial_search_data;
 
   // 検索結果のページ表示用
   const currentPage = 1; // 現在のページ（必要に応じて動的に変更）
@@ -30,7 +42,6 @@ export  function DocumentLibrary() {
   // 表示範囲を計算
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalCount);
-
 
   // 未ログインの場合はサインインボタンだけ表示
   if (!session) {
@@ -50,31 +61,33 @@ export  function DocumentLibrary() {
   // ログイン済みの場合
   const accessToken = session.accessToken as string | undefined;
 
-    // // Loading処理
-    // if (loading) {
-    //   return (
-    //     <div className="flex overflow-hidden flex-col bg-gray-200">
-    //       <Header />
-    //       <div className="flex items-center justify-center min-h-screen">
-    //         <p>読み込み中...</p>
-    //       </div>
-    //     </div>
-    //   );
-    // }
-    if (error) {
-      return (
-        <div className="flex overflow-hidden flex-col bg-gray-200">
-          <Header />
-          <div className="flex items-center justify-center min-h-screen">
-            <p>エラーが発生しました: {error}</p>
-          </div>
+  // // Loading処理
+  // if (loading) {
+  //   return (
+  //     <div className="flex overflow-hidden flex-col bg-gray-200">
+  //       <Header />
+  //       <div className="flex items-center justify-center min-h-screen">
+  //         <p>読み込み中...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  if (error) {
+    return (
+      <div className="flex overflow-hidden flex-col bg-gray-200">
+        <Header />
+        <div className="flex items-center justify-center min-h-screen">
+          <p>エラーが発生しました: {error}</p>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col overflow-hidden bg-gray-200">
-
+    <div className="flex overflow-hidden flex-col bg-gray-200">
+      {/* データデバッグ用コンポーネント */}
+      {/* <CheckDataContext /> */}
+      
       <Header />
 
       {/* アクセストークン表示（デモ用） */}
@@ -134,45 +147,47 @@ export  function DocumentLibrary() {
               <FilterSection title={section.title} items={section.items} />
             </div>
           ))} */}
-          {Object.entries(facetInfo || {}).map(([facetTitle, facetItems], index) => (
-          <div key={index} className={index > 0 ? "mt-5" : ""}>
-            <FilterSection
-              title={facetTitle}
-              items={
-                Array.isArray(facetItems)
-                  ? facetItems.map((item) => ({
-                      label: item.value,
-                      count: item.count,
-                    }))
-                  : []
-              }
-            />
-          </div>
-        ))}
+          {Object.entries(facetInfo || {}).map(
+            ([facetTitle, facetItems], index) => (
+              <div key={index} className={index > 0 ? "mt-5" : ""}>
+                <FilterSection
+                  title={facetTitle}
+                  items={
+                    Array.isArray(facetItems)
+                      ? facetItems.map((item) => ({
+                          label: item.value,
+                          count: item.count,
+                        }))
+                      : []
+                  }
+                  onFilterChange={(selected) => setSelectedTags(selected)}
+                />
+              </div>
+            )
+          )}
         </div>
 
         <div className="flex flex-col w-full">
+          <div className="grid grid-cols-2 gap-6">
+            {Array.isArray(filteredData) &&
+              filteredData.map((card, index) => (
+                <BusinessCard
+                  key={card.id} // 一意のidを利用
+                  title={card.title}
+                  image="https://geekpictures.co.jp/jp/wp-content/themes/geek/img/logo_head.svg" // 必要に応じてデフォルト画像を指定
+                  personInfo={{
+                    name: card.authors.join(", "),
+                    department: card.category,
+                    // documentTypeは現状ないのでコメントアウト
+                    // documentType: "社内資料",
+                  }}
+                  tags={card.tags}
+                  date={new Date(card.release_year, 0, 1).toLocaleDateString()} // リリース年をフォーマット
+                  fileType="PDF" // 必要ならデフォルトのファイル種別
+                />
+              ))}
+          </div>
 
-        
-            <div className="grid grid-cols-2 gap-6">
-              {Array.isArray(initial_search_data) &&
-                initial_search_data.map((card, index) => (
-                  <BusinessCard
-                    key={card.id} // 一意のidを利用
-                    title={card.title}
-                    image="https://geekpictures.co.jp/jp/wp-content/themes/geek/img/logo_head.svg" // 必要に応じてデフォルト画像を指定
-                    personInfo={{
-                      name: card.authors.join(", "),
-                      department: card.category,
-                      documentType: "マーケティング資料",
-                    }}
-                    tags={card.tags}
-                    date={new Date(card.release_year, 0, 1).toLocaleDateString()} // リリース年をフォーマット
-                    fileType="PDF" // 必要ならデフォルトのファイル種別
-                  />
-                ))}
-            </div>
-          
           {/* <div className="grid grid-cols-2 gap-6">
             {businessCardsData.map((card, index) => (
               <BusinessCard
@@ -199,14 +214,7 @@ export  function DocumentLibrary() {
           </div>
         </div>
       </div>
-      {/* サインアウトボタン */}
-      <button onClick={() => signOut()} className="p-2 bg-gray-600 text-white">
-          Sign Out
-      </button>
       <Footer />
     </div>
   );
-      
 };
-
-export default DocumentLibrary;
