@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 // メタデータ等（省略可）
 export const metadata = {
-  title: "My App",
+  title: "Search Demo",
   description: "NextAuth + Azure AD + Next.js 13 App Router",
 };
 
@@ -28,4 +28,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+} 
