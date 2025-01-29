@@ -2,32 +2,32 @@ import * as React from "react";
 import Image from "next/image";
 import { FilterSectionProps } from "./types";
 
-export const FilterSection: React.FC<FilterSectionProps  & { onFilterChange: (selectedItems: string[]) => void }> = ({
+export const FilterSection: React.FC<FilterSectionProps  & { onFilterChange: (selectedItems: (string | number)[]) => void }> = ({
   title,
   items,
+  selectedItems,
   onFilterChange,
+  
 }) => {
   // 選択されたアイテムを管理するローカル状態
-  const [selectedItems, setSelectedItems] = React.useState<string[]>([]);
+  // const [selectedItems, setSelectedItems] = React.useState<(string | number)[]>([]);
 
-  // アイテムがクリックされたときの処理
-  const handleItemClick = (label: string) => {
-    const updatedSelectedItems = selectedItems.includes(label)
-      ? selectedItems.filter((item) => item !== label)
-      : [...selectedItems, label];
+  // const handleItemClick = (label: string | number) => {
+  //   const updatedSelectedItems = selectedItems.includes(label)
+  //     ? selectedItems.filter((item) => item !== label)
+  //     : [...selectedItems, label];
 
-    setSelectedItems(updatedSelectedItems);
-    onFilterChange(updatedSelectedItems); // 選択された項目を親コンポーネントに渡す
-  };
-
-  // const handleItemClick = (label: string) => {
-  //   setSelectedItems((prevSelected) =>
-  //     prevSelected.includes(label)
-  //       ? prevSelected.filter((item) => item !== label) // すでに選択されている場合は削除
-  //       : [...prevSelected, label] // 選択されていない場合は追加
-  //   );
+  //   setSelectedItems(updatedSelectedItems);
+  //   onFilterChange(updatedSelectedItems);
   // };
-  // console.log(selectedItems)
+
+  const handleItemClick = (label: string | number) => {
+    const updatedSelectedItems = selectedItems.includes(label)
+      ? selectedItems.filter((item:any) => item !== label) // 既に選択されていたら解除
+      : [...selectedItems, label]; // 新しく追加
+
+    onFilterChange(updatedSelectedItems); // 親の状態を更新
+  };
 
   return (
     <div className="flex flex-col pt-3 pr-2 pb-4 pl-4 w-full whitespace-nowrap bg-white rounded-lg shadow-[0px_2px_4px_rgba(0,0,0,0.15)]">

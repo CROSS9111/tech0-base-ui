@@ -22,18 +22,79 @@ export default function DocumentLibrary() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
   const { data, loading, error } = useDataContext();
-  const facetInfo = data?.facet_info || {};
+  const [facetInfo, setFacetInfo] = useState(data?.facet_info || {});
   const initial_search_data = data?.search_results || {};
 
-  // フィルタリング状態を管理
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  // フィルタリング状態を管理（カテゴリごとに分ける）
+  const [filters, setFilters] = useState<{ [key: string]: (string | number)[] }>({});
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const filteredData = searchResults?.length ? searchResults : [];
+  const [uiloading, setUiLoading] = useState<boolean>(false);
 
-  // フィルタリングされたデータ
-  const filteredData = selectedTags.length
-    ? initial_search_data.filter((item: any) =>
-        selectedTags.every((tag) => item.tags.includes(tag))
-      )
-    : initial_search_data;
+  // 初期データをフェッチする
+  useEffect(() => {
+    fetchFilteredData({});
+  }, []);
+
+  // filters が更新されたら API を呼び出す
+  // useEffect(() => {
+  //   if (Object.keys(filters).length > 0) {
+  //     fetchFilteredData(filters);
+  //   }
+  // }, [filters]);
+  useEffect(() => {
+    fetchFilteredData(filters, searchKeyword);
+  }, [filters]);
+  
+  const fetchFilteredData = async (appliedFilters: { [key: string]: (string | number)[] }, keyword = "*") => {
+    setUiLoading(true);
+    const requestData = {
+      keyword,
+      filters: appliedFilters,
+    };
+
+    try {
+      const response = await fetch("/api/get_information_by_query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setSearchResults(result.search_results);
+      setFacetInfo(result.facet_info);
+    } catch (error) {
+      console.error("APIエラー:", error);
+    } finally {
+      setUiLoading(false);
+    }
+  };
+  console.log("filters", filters, "searchKeyword", searchKeyword);
+
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword); // フリーワードを保存
+    fetchFilteredData(filters, keyword); // フィルターを保持したまま検索
+  };
+
+  
+  const handleFilterChange = (category: string, selectedItems: (string | number)[]) => {
+    setFilters((prev) => {
+      const updatedFilters = { ...prev };
+      if (selectedItems.length === 0) {
+        delete updatedFilters[category];
+      } else {
+        updatedFilters[category] = selectedItems;
+      }
+      return updatedFilters;
+    });
+  };
 
   // 検索結果のページ表示用
   const currentPage = 1; // 現在のページ（必要に応じて動的に変更）
@@ -42,6 +103,20 @@ export default function DocumentLibrary() {
   // 表示範囲を計算
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalCount);
+
+  const handleSearchResult = (results: any[]) => {
+    setSearchResults(results);
+  };
+
+  const handleFacetInfoChange = (newFacetInfo: any) => {
+    setFacetInfo(newFacetInfo);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+    setSearchKeyword(""); // フリーワードもリセット
+    fetchFilteredData({});
+  };
 
   // 未ログインの場合はサインインボタンだけ表示
   if (!session) {
@@ -60,35 +135,40 @@ export default function DocumentLibrary() {
 
   // ログイン済みの場合
   const accessToken = session.accessToken as string | undefined;
-
-  // // Loading処理
-  // if (loading) {
-  //   return (
-  //     <div className="flex overflow-hidden flex-col bg-gray-200">
-  //       <Header />
-  //       <div className="flex items-center justify-center min-h-screen">
-  //         <p>読み込み中...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-  if (error) {
+  // ローディング中の表示
+  if (uiloading) {
     return (
-      <div className="flex overflow-hidden flex-col bg-gray-200">
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <p>エラーが発生しました: {error}</p>
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-xl font-semibold">読み込み中...</p>
       </div>
     );
   }
 
+    // // Loading処理
+    // if (loading) {
+    //   return (
+    //     <div className="flex overflow-hidden flex-col bg-gray-200">
+    //       <Header />
+    //       <div className="flex items-center justify-center min-h-screen">
+    //         <p>読み込み中...</p>
+    //       </div>
+    //     </div>
+    //   );
+    // }
+    if (error) {
+      return (
+        <div className="flex overflow-hidden flex-col bg-gray-200">
+          <Header filters={filters} searchKeyword={searchKeyword} onSearch={handleSearch}/>
+          <div className="flex items-center justify-center min-h-screen">
+            <p>エラーが発生しました: {error}</p>
+          </div>
+        </div>
+      );
+    }
+
   return (
-    <div className="flex overflow-hidden flex-col bg-gray-200">
-      {/* データデバッグ用コンポーネント */}
-      {/* <CheckDataContext /> */}
-      
-      <Header />
+    <div className="flex flex-col overflow-hidden bg-gray-200">
+      <Header filters={filters} searchKeyword={searchKeyword} onSearch={handleSearch}/>
 
       {/* アクセストークン表示（デモ用） */}
       {/* {accessToken && (
@@ -110,9 +190,10 @@ export default function DocumentLibrary() {
               />
               <div className="my-auto">絞り込み</div>
             </div>
-            <button className="flex text-xs" aria-label="Clear filters">
+            {/* クリアボタン */}
+            <button className="flex text-xs" aria-label="Clear filters" onClick={handleClearFilters}>
               <img
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/c49cce0b02985bf931b57aed5966ad03c37362cf76515023ecb9c13ed22b5d81?placeholderIfAbsent=true&apiKey=830249011bfc4b9a9e2dddb095d90bfd"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/c49cce0b02985bf931b57aed5966ad03c37362cf76515023ecb9c13ed22b5d81"
                 alt="クリアアイコン"
                 width={18}
                 height={18}
@@ -142,11 +223,6 @@ export default function DocumentLibrary() {
 
       <div className="flex gap-5 px-10 mt-5 max-md:flex-col max-md:px-5">
         <div className="flex flex-col max-w-xs">
-          {/* {filterSections.map((section, index) => (
-            <div key={index} className={index > 0 ? "mt-5" : ""}>
-              <FilterSection title={section.title} items={section.items} />
-            </div>
-          ))} */}
           {Object.entries(facetInfo || {}).map(
             ([facetTitle, facetItems], index) => (
               <div key={index} className={index > 0 ? "mt-5" : ""}>
@@ -160,7 +236,8 @@ export default function DocumentLibrary() {
                         }))
                       : []
                   }
-                  onFilterChange={(selected) => setSelectedTags(selected)}
+                  selectedItems={filters[facetTitle] || []} // 選択されたアイテムを渡す
+                  onFilterChange={(selected) => handleFilterChange(facetTitle, selected)}
                 />
               </div>
             )
@@ -170,7 +247,7 @@ export default function DocumentLibrary() {
         <div className="flex flex-col w-full">
           <div className="grid grid-cols-2 gap-6">
             {Array.isArray(filteredData) &&
-              filteredData.map((card, index) => (
+              filteredData.map((card: any, index: number) => (
                 <BusinessCard
                   key={card.id} // 一意のidを利用
                   title={card.title}
@@ -187,21 +264,6 @@ export default function DocumentLibrary() {
                 />
               ))}
           </div>
-
-          {/* <div className="grid grid-cols-2 gap-6">
-            {businessCardsData.map((card, index) => (
-              <BusinessCard
-                key={index}
-                title={card.title}
-                image={card.image}
-                personInfo={card.personInfo}
-                tags={card.tags}
-                date={card.date}
-                fileType={card.fileType}
-              />
-            ))}
-          </div> */}
-
           {/* Pagination（BusinessCardと同じ幅にする） */}
           <div className="mt-8 flex justify-center w-full">
             <Pagination
