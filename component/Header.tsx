@@ -3,18 +3,32 @@ import Image from "next/image";
 import { signOut } from "next-auth/react";
 
 export const Header: React.FC<{ 
-  filters: {[key: string]: (string | number)[] }
-  searchKeyword: string; // 🔹 フリーワード検索を親から受け取る
-  onSearch: (keyword: string) => void;
+  filters?: {[key: string]: (string | number)[] }
+  searchKeyword?: string; // 🔹 フリーワード検索を親から受け取る
+  onSearch?: (keyword: string) => void;
    }> = ({ filters, searchKeyword, onSearch}) => {
+  const [localSearch, setLocalSearch] = useState(searchKeyword || "");
+  const [isComposing, setIsComposing] = useState(false); // 日本語入力中のフラグ
+
+  // const handleSearch = () => {
+  //   onSearch(searchKeyword);
+  // };
+
+  // const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === "Enter") {
+  //     handleSearch(); // エンターキーで検索実行
+  //   }
+  // };
 
   const handleSearch = () => {
-    onSearch(searchKeyword);
+    if (onSearch) {
+      onSearch(localSearch);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch(); // エンターキーで検索実行
+    if (e.key === "Enter" && !isComposing) {
+      handleSearch();
     }
   };
   
@@ -38,9 +52,11 @@ export const Header: React.FC<{
           <input
             id="search"
             type="text"
-            value={searchKeyword}
-            onChange={(e) => onSearch(e.target.value)} // 🔹 変更時に即時反映
-            onKeyDown={handleKeyPress} // 🔹 Enterキーで検索実行
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)} // 🔹 リアルタイム更新
+            onKeyDown={handleKeyPress} // 🔹 Enterキー押下時に検索実行
+            onCompositionStart={() => setIsComposing(true)} // 🔹 IME入力開始
+            onCompositionEnd={() => setIsComposing(false)} // 🔹 IME入力確定
             placeholder="フリーワード検索"
             className="flex-grow px-2 py-1 border-none outline-none text-pink-500 placeholder-pink-300 bg-transparent"
           />

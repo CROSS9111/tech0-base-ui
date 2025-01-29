@@ -37,12 +37,6 @@ export default function DocumentLibrary() {
     fetchFilteredData({});
   }, []);
 
-  // filters が更新されたら API を呼び出す
-  // useEffect(() => {
-  //   if (Object.keys(filters).length > 0) {
-  //     fetchFilteredData(filters);
-  //   }
-  // }, [filters]);
   useEffect(() => {
     fetchFilteredData(filters, searchKeyword);
   }, [filters]);
