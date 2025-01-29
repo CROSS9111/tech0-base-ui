@@ -84,7 +84,10 @@ export default function DocumentLibrary() {
   }
 
   return (
-    <div className="flex flex-col overflow-hidden bg-gray-200">
+    <div className="flex overflow-hidden flex-col bg-gray-200">
+      {/* データデバッグ用コンポーネント */}
+      {/* <CheckDataContext /> */}
+      
       <Header />
 
       {/* アクセストークン表示（デモ用） */}
@@ -211,11 +214,7 @@ export default function DocumentLibrary() {
           </div>
         </div>
       </div>
-      {/* サインアウトボタン */}
-      {/* <button onClick={() => signOut()} className="p-2 bg-gray-600 text-white">
-          Sign Out
-      </button>*/}
       <Footer />
     </div>
   );
-}
+};
