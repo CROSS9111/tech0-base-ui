@@ -6,6 +6,8 @@ export interface FilterItemProps {
 export interface FilterSectionProps {
   title: string;
   items: FilterItemProps[];
+  selectedItems: (string | number)[]; // 追加
+  onFilterChange: (selectedItems: (string | number)[]) => void;
 }
 
 export interface PaginationProps {

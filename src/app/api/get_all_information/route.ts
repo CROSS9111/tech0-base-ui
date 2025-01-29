@@ -278,6 +278,7 @@ export async function GET() {
   const get_all_information = {
     query: "*",
     facets: ["tags", "authors", "category","release_year"],
+    Top:1000,
   };
 
   try {
@@ -300,7 +301,7 @@ export async function GET() {
     // const results = test_data
 
     // ログ出力（デバッグ用）
-    // console.log("取得したデータ:", results);
+    console.log("取得したデータ:", results);
     console.log("取得したデータ完了");
 
 
