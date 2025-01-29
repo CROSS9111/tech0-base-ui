@@ -10,16 +10,6 @@ export const Header: React.FC<{
   const [localSearch, setLocalSearch] = useState(searchKeyword || "");
   const [isComposing, setIsComposing] = useState(false); // 日本語入力中のフラグ
 
-  // const handleSearch = () => {
-  //   onSearch(searchKeyword);
-  // };
-
-  // const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === "Enter") {
-  //     handleSearch(); // エンターキーで検索実行
-  //   }
-  // };
-
   const handleSearch = () => {
     if (onSearch) {
       onSearch(localSearch);
