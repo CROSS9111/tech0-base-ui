@@ -14,6 +14,8 @@ export interface PaginationProps {
   currentPage: number;
   totalItems: number;
   itemsPerPage: number;
+  startItem: number;
+  endItem: number;
   onPrevious: () => void;
   onNext: () => void;
 }
