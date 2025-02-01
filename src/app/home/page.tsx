@@ -43,6 +43,7 @@ export default function DocumentLibrary() {
   
   const fetchFilteredData = async (appliedFilters: { [key: string]: (string | number)[] }, keyword = "*") => {
     setUiLoading(true);
+    setCurrentPage(1)
     const requestData = {
       keyword,
       filters: appliedFilters,
@@ -90,13 +91,36 @@ export default function DocumentLibrary() {
     });
   };
 
-  // 検索結果のページ表示用
-  const currentPage = 1; // 現在のページ（必要に応じて動的に変更）
-  const itemsPerPage = 20; // 1ページあたりのアイテム数
-  const totalCount = data?.total_count || 0;
-  // 表示範囲を計算
+  // ページネーション用の state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  const totalCount = searchResults.length;
+
+  // フィルターや検索時にページを1ページ目にリセット
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchResults]);
+
+  // ページネーション用のデータ表示範囲
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalCount);
+
+  // 「次へ」ボタンを押した時
+  const handleNextPage = () => {
+    if (currentPage * itemsPerPage < totalCount) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  // 「前へ」ボタンを押した時
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  // 表示するデータを slice で抽出
+  const paginatedData = searchResults.slice(startItem - 1, endItem);
 
   const handleSearchResult = (results: any[]) => {
     setSearchResults(results);
@@ -196,9 +220,15 @@ export default function DocumentLibrary() {
               <div>クリア</div>
             </button>
           </div>
-          <div className="self-start mt-5 text-sm font-medium leading-none text-neutral-700">
+          {/* <div className="self-start mt-5 text-sm font-medium leading-none text-neutral-700">
             <span className="font-bold tracking-normal">
               {startItem} - {endItem}
+            </span>
+            <span className="font-bold"> / {totalCount}個</span>
+          </div> */}
+          <div className="self-start mt-5 text-sm font-medium leading-none text-neutral-700">
+            <span className="font-bold tracking-normal">
+              {totalCount > 0 ? `${startItem} - ${endItem}` : "0"}
             </span>
             <span className="font-bold"> / {totalCount}個</span>
           </div>
@@ -240,8 +270,8 @@ export default function DocumentLibrary() {
 
         <div className="flex flex-col w-full">
           <div className="grid grid-cols-2 gap-6">
-            {Array.isArray(filteredData) &&
-              filteredData.map((card: any, index: number) => (
+            {Array.isArray(paginatedData) &&
+              paginatedData.map((card: any, index: number) => (
                 <BusinessCard
                   key={card.id} // 一意のidを利用
                   title={card.title}
@@ -261,11 +291,13 @@ export default function DocumentLibrary() {
           {/* Pagination（BusinessCardと同じ幅にする） */}
           <div className="mt-8 flex justify-center w-full">
             <Pagination
-              currentPage={1}
-              totalItems={320}
-              itemsPerPage={20}
-              onPrevious={() => {}}
-              onNext={() => {}}
+              currentPage={currentPage}
+              totalItems={totalCount}
+              itemsPerPage={itemsPerPage}
+              startItem={startItem} 
+              endItem={endItem}
+              onPrevious={handlePreviousPage}
+              onNext={handleNextPage}
             />
           </div>
         </div>

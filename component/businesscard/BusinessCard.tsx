@@ -54,7 +54,8 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
             <InfoRow label="所属部署" value={personInfo.department} />
           </div>
         </div>
-        <div className="flex gap-2.5 items-center self-start mt-6 text-sm font-medium leading-none text-center whitespace-nowrap text-neutral-700">
+        
+        <div className="flex flex-wrap gap-2.5 items-center self-start mt-6 text-sm font-medium leading-none text-center whitespace-nowrap text-neutral-700">
           {tags.map((tag, index) => (
             <Tag key={index} text={tag} />
           ))}

@@ -3,7 +3,7 @@ import { TagProps } from "../types";
 
 export const Tag: React.FC<TagProps> = ({ text }) => {
   return (
-    <div className="gap-1 self-stretch px-3 pt-0.5 pb-1 my-auto bg-red-100 rounded-xl">
+    <div className="gap-1 self-stretch px-3 pt-0.5 pb-1 my-auto bg-red-100 rounded-xl max-width ">
       {text}
     </div>
   );
