@@ -17,6 +17,7 @@ export default async function Home() {
     <Link href="/home">
       <div className="px-6 py-3 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300">
         DEMO or DIE
+        test
       </div>
     </Link>
   </div>
